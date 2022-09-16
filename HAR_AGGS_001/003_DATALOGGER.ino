@@ -573,3 +573,46 @@ void dataloggerWritePermission(){
     loop();
   }
 }
+
+bool dataloggerCheckPermissionExist(String uuid){
+  Serial.println("entrou na funcao WritePermission");
+  if (!SD.exists("CAD-PER.txt")){
+    Serial.println("tentou criar arquivo");
+    SD.open("CAD-PER.txt", FILE_WRITE);
+  } 
+  if (!SD.exists("CAD-PER.txt")){
+    Serial.println("cria;áo do arquivo deu errado");
+    if(!SD.begin(PIN_SS_DATA_LOG)){
+      visorDrawMenu(SCREEN_ERROR);
+      Serial.println("Erro na abertura do cartao SD, [Utils.cpp - 882]");
+      delay(1500);
+      loop();
+    }
+  }
+  _uuidToCheck = uuid;
+  fileName.close();
+  delay(50);
+  fileName = SD.open("CAD-PER.txt");
+  if (fileName) {
+    while (fileName.available())
+    {
+      visorDrawMenu(SCREEN_PROGRESS);
+      _uuidRead = fileName.readStringUntil(13);
+      Serial.println(_uuidRead);
+      _uuidRead.trim();
+      _uuidRead.remove(0,43);
+      int length = _uuidRead.indexOf(";");
+      _uuidRead.remove(length);
+      Serial.print(F("Verificação de UUID = "));
+      Serial.print(_uuidRead);
+      Serial.print (F(" Sistema <---> Nova Tag "));
+      Serial.println (_uuidToCheck);
+      if (_uuidToCheck == _uuidRead){
+          return true;
+      }else{
+          return false;
+      }
+    }
+    return false;
+  }
+}
