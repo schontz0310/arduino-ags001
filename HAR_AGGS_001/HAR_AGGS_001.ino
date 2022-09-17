@@ -83,7 +83,11 @@ const uint8_t LED_VERDE         =       31;                                     
 const uint8_t CS_PIN            =       10;                                     // Chip Select (Slave Select do protocolo SPI) do modulo Lora
 const uint8_t RST_PIN           =       10;                                     // Configuravel - Pino Reset modulo RFID
 const uint8_t SS_SDA_PIN        =       4;                                      // Configuravel - Pino Slave Select (SDA) modulo RFID
+const uint8_t RELE_02           =       A13;                                    // Pino Rele_02
+const uint8_t RELE_01           =       A0;                                     // Pino Rele_01
+const uint8_t BOTAO             =       8;                                      // Botao de uso geral
 
+volatile unsigned long counter;
 const byte lines = 4;                                                           //NUMERO DE LINHAS DO TECLADO
 const byte columns = 4;                                                         //NUMERO DE COLUNAS DO TECLADO
 byte linesPines[lines] = {41, 39, 37, 35};                                      //PINOS CONECTADOS AS LINHAS DO TECLADO
@@ -215,6 +219,7 @@ String companyNumber;
 String jsonPayload; 
 String rfidReaderIDValue;
 char tecla_presionada;
+float fuelQuantity;
 
 
 ScreenName _screen;
@@ -282,4 +287,27 @@ void loop() {
   Serial.println(VEHICLE_NAME);
   Serial.println(VEHICLE_FUEL);
   Serial.println(VEHICLE_REGISTER);
+  Serial.println(VEHICLE_REGISTER);
+  Serial.println(F("==============================================================="));
+    // final da funcao de captura do veiulo
+  if (OPERADOR_PERMISSION == "3"){
+    PERMISSION_TAG = OPERADOR_REGISTER + VEHICLE_REGISTER;
+    Serial.println(PERMISSION_TAG);
+    if (dataloggerCheckPermissionExist(PERMISSION_TAG) == false){
+      visorDrawMenu(SCREEN_ERROR);
+      somErrado();
+      delay(1500);
+      loop();
+    } 
+  }
+  //permissáo checada
+  VehicleFuel fuel;
+  if (VEHICLE_FUEL == "1") {
+    fuel = DIESEL_S10;
+  }else{
+    fuel = DIESEL_S500;
+  }
+  FUEL_QUANITY = fuelLoad(fuel);
+  registerFueLCharger();
+  loop(); 
 }

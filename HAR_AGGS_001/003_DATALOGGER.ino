@@ -616,3 +616,58 @@ bool dataloggerCheckPermissionExist(String uuid){
     return false;
   }
 }
+
+
+void dataloggerWriteFuelCharge(){
+  Serial.println("entrou na funcao WriteFuelCharger");
+  if (!SD.exists("CAD-REG.txt")){
+    Serial.println("tentou criar arquivo");
+    SD.open("CAD-REG.txt", FILE_WRITE);
+  } 
+  if (!SD.exists("CAD-REG.txt")){
+    Serial.println("cria;áo do arquivo deu errado");
+    if(!SD.begin(PIN_SS_DATA_LOG)){
+      visorDrawMenu(SCREEN_ERROR);
+      Serial.println("Erro na abertura do cartao SD");
+      delay(1500);
+      loop();
+    }
+  }
+  Serial.println(fileName);
+  fileName.close();
+  Serial.println(fileName);
+  fileName = SD.open("CAD-REG.txt", FILE_WRITE);
+  Serial.println(fileName);
+  if (fileName) {
+    Serial.println(F("GRAVANDO DADOS NO CARTÃO SD"));
+    fileName.print(getTimestamp());                  // DATA E HORA
+    fileName.print(";");                                // SEPARADOR CONDICIONAL
+    fileName.print(getUID());              // NUMERO UNICO DO EQUIPAMENTO
+    fileName.print(";");                                // SEPARADOR CONDICIONAL
+    fileName.print("099");                              // CODIGO DA FUNÇÃO
+    fileName.print(";");                                // SEPARADOR CONDICIONAL
+    fileName.print(_operatorUuid);                   // UID TAG RFID
+    fileName.print(";");                                // SEPARADOR CONDICIONAL
+    fileName.print(_operatorName);                   // NOME DO VEICULO
+    fileName.print(";");                                // SEPARADOR CONDICIONAL
+    fileName.print(_operatorLevel);
+    fileName.print(";");                                // SEPARADOR CONDICIONAL
+    fileName.print(_vehicleUuid);
+    fileName.print(";");                                // SEPARADOR CONDICIONAL
+    fileName.print(_vehicleName);
+    fileName.print(";");                                // SEPARADOR CONDICIONAL
+    fileName.print(_vehicleFuel);
+    fileName.print(";");                                // SEPARADOR CONDICIONAL
+    fileName.print(fuelQuantity);
+    fileName.print(";");                                // SEPARADOR CONDICIONAL
+    fileName.println(COMPANY);
+    fileName.close();
+    delay(500);
+  } else {
+    Serial.println(F("FALHA AO GRAVAR DADOS NO CARTÃO SD"));
+    visorDrawMenu(SCREEN_ERROR);
+    Serial.println("Erro na abertura do cartao SD");
+    delay(1500);
+    loop();
+  }
+}
