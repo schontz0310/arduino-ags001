@@ -220,6 +220,7 @@ String jsonPayload;
 String rfidReaderIDValue;
 char tecla_presionada;
 float fuelQuantity;
+uint8_t _pump;
 
 
 ScreenName _screen;
@@ -227,6 +228,8 @@ ScreenName _nextScreen;
 
 
 void setup() {
+  pinMode(RELE_01, OUTPUT);
+  _pump = RELE_01;
   pinMode(PIN_SS_DATA_LOG, OUTPUT);
   pinMode(SOM, OUTPUT);
   pinMode(LED_VERMELHO, OUTPUT);
@@ -305,7 +308,7 @@ void loop() {
   if (VEHICLE_FUEL == "1") {
     fuel = DIESEL_S10;
   }else{
-    fuel = DIESEL_S500;
+    fuel = DIESEL_S10;
   }
   FUEL_QUANITY = fuelLoad(fuel);
   registerFueLCharger();

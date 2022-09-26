@@ -43,13 +43,13 @@ void CANAL_D() {
 
 float fuelLoad(VehicleFuel fuel){
   uint8_t _buttonStatus = 0;
-  uint8_t _pump;
   fuelQuantity = 0;
   visorDrawScreen(SCREEN_PUMP_CHARGE_FUEL, String(fuelQuantity));
+  counter = 0;
   switch (fuel)
   {
   case DIESEL_S500:
-    _pump = RELE_02;
+    _pump = RELE_01;
     digitalWrite(_pump, HIGH);
     do {
       attachInterrupt(0, CANAL_A, RISING); //A rampa de subida do da interrupção 4 ativa a função CANAL_D(). AttachInterrupt 4 esta ligado no pino 19 do Arduino Mega.
@@ -78,16 +78,23 @@ float fuelLoad(VehicleFuel fuel){
     _pump = RELE_01;
     digitalWrite(_pump, HIGH);
     do {
-      attachInterrupt(4, CANAL_C, RISING); //A rampa de subida do da interrupção 4 ativa a função CANAL_D(). AttachInterrupt 4 esta ligado no pino 19 do Arduino Mega.
-      attachInterrupt(5, CANAL_D, RISING); //A rampa de subida do da interrupção 5 ativa a função CANAL_D(). AttachInterrupt 4 esta ligado no pino 19 do Arduino Mega.
+      attachInterrupt(0, CANAL_A, RISING); //A rampa de subida do da interrupção 4 ativa a função CANAL_D(). AttachInterrupt 4 esta ligado no pino 19 do Arduino Mega.
+      attachInterrupt(1, CANAL_B, RISING); //A rampa de subida do da interrupção 5 ativa a função CANAL_D(). AttachInterrupt 4 esta ligado no pino 19 do Arduino Mega.
+      // attachInterrupt(4, CANAL_C, RISING); //A rampa de subida do da interrupção 4 ativa a função CANAL_D(). AttachInterrupt 4 esta ligado no pino 19 do Arduino Mega.
+      //attachInterrupt(5, CANAL_D, RISING); //A rampa de subida do da interrupção 5 ativa a função CANAL_D(). AttachInterrupt 4 esta ligado no pino 19 do Arduino Mega.
       _buttonStatus = digitalRead(_pump);
       delay(10);
       if (_buttonStatus == 1) {
-        fuelQuantity = (float)counter * 0.0025;
+        fuelQuantity = (float)counter * 0.0050;
         if ((counter < 20) || (counter > 4000000)) {
           fuelQuantity = 0;
         } else {
           // tela de abastecimento
+          Serial.print("COUNTER");
+          Serial.println(String(counter));
+          Serial.print("FUEL");
+          Serial.println(String(fuelQuantity));
+          
           visorDrawScreen(SCREEN_PUMP_CHARGE_FUEL, String(fuelQuantity));
         }
         delay(100);

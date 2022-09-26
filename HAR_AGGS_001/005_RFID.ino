@@ -1,8 +1,7 @@
 void rfidReaderBegin() {
-  rfid.PCD_SetAntennaGain(rfid.RxGain_max);
   rfid.PCD_Init();
+  rfid.PCD_SetRegisterBitMask(rfid.RFCfgReg, (0x07<<4));
   if (rfid.PCD_PerformSelfTest() > 0) {
-    rfid.PCD_SetAntennaGain(rfid.RxGain_max);
     Serial.println(F("RFID OK"));
     statusCheck = 0;
     stateCheck[2] = 0;
