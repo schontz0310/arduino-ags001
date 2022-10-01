@@ -575,7 +575,7 @@ void dataloggerWritePermission(){
 }
 
 bool dataloggerCheckPermissionExist(String uuid){
-  Serial.println("entrou na funcao WritePermission");
+  Serial.println("entrou na funcao CheckPermission");
   if (!SD.exists("CAD-PER.txt")){
     Serial.println("tentou criar arquivo");
     SD.open("CAD-PER.txt", FILE_WRITE);
@@ -609,8 +609,6 @@ bool dataloggerCheckPermissionExist(String uuid){
       Serial.println (_uuidToCheck);
       if (_uuidToCheck == _uuidRead){
           return true;
-      }else{
-          return false;
       }
     }
     return false;

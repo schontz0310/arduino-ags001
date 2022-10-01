@@ -80,7 +80,6 @@ const uint8_t PIN_SS_DATA_LOG   =       46;                                     
 const uint8_t SOM               =       27;                                     // Pino de ligação do buzzer
 const uint8_t LED_VERMELHO      =       29;                                     // Pino de ligação do led vermelho
 const uint8_t LED_VERDE         =       31;                                     // Pino de ligação do led verde
-const uint8_t CS_PIN            =       10;                                     // Chip Select (Slave Select do protocolo SPI) do modulo Lora
 const uint8_t RST_PIN           =       10;                                     // Configuravel - Pino Reset modulo RFID
 const uint8_t SS_SDA_PIN        =       4;                                      // Configuravel - Pino Slave Select (SDA) modulo RFID
 const uint8_t RELE_02           =       A13;                                    // Pino Rele_02
@@ -180,7 +179,7 @@ const char PASS[]               =       "ags001#2020";                          
 uint8_t statusCheck             =       0;
 bool stateCheck[8]              =       {0,0,0,0,0,0,0,0};                      // 0=SD, 1=RTC, 2=RFID, 3=MODEN           
 const uint8_t errorCode[6]      =       {1,3,5,11,20,0};                       
-const bool GET_SYSTEM_TIMESTAMP =       false;                                   // Variavel para setar quando o programa deve pegar a hora do sistema
+const bool GET_SYSTEM_TIMESTAMP =       true;                                   // Variavel para setar quando o programa deve pegar a hora do sistema
 String COMPANY;
 String OPERADOR_REGISTER;
 String OPERADOR_NAME;
@@ -220,13 +219,15 @@ String jsonPayload;
 String rfidReaderIDValue;
 char tecla_presionada;
 float fuelQuantity;
-
-
+uint8_t _pump;
+uint8_t _status;
 ScreenName _screen;
 ScreenName _nextScreen;
 
 
 void setup() {
+  pinMode(RELE_01, OUTPUT);
+  pinMode(RELE_02, OUTPUT);
   pinMode(PIN_SS_DATA_LOG, OUTPUT);
   pinMode(SOM, OUTPUT);
   pinMode(LED_VERMELHO, OUTPUT);
@@ -300,6 +301,9 @@ void loop() {
       loop();
     } 
   }
+  Serial.println(F("==============================================================="));
+  Serial.println(F("FIM DA CHECAGEM"));
+  Serial.println(F("==============================================================="));
   //permissáo checada
   VehicleFuel fuel;
   if (VEHICLE_FUEL == "1") {

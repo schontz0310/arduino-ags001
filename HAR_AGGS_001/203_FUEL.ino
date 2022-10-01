@@ -42,13 +42,20 @@ void CANAL_D() {
 
 
 float fuelLoad(VehicleFuel fuel){
+  Serial.println(F("==============================================================="));
+  Serial.println(F("INICIO DO ABASTECIMENTO"));
+  Serial.println(F("==============================================================="));
+  //permissáo checada
   uint8_t _buttonStatus = 0;
-  uint8_t _pump;
   fuelQuantity = 0;
+  counter = 0;
   visorDrawScreen(SCREEN_PUMP_CHARGE_FUEL, String(fuelQuantity));
   switch (fuel)
   {
   case DIESEL_S500:
+    Serial.println(F("==============================================================="));
+    Serial.println(F("DIESEL S500"));
+    Serial.println(F("==============================================================="));
     _pump = RELE_02;
     digitalWrite(_pump, HIGH);
     do {
@@ -75,6 +82,10 @@ float fuelLoad(VehicleFuel fuel){
     break;
   
   case DIESEL_S10:
+  Serial.println(F("==============================================================="));
+  Serial.println(F("DIESEL S10"));
+  Serial.println(F("==============================================================="));
+  //permissáo checada
     _pump = RELE_01;
     digitalWrite(_pump, HIGH);
     do {
@@ -101,6 +112,10 @@ float fuelLoad(VehicleFuel fuel){
     break;
   
   default:
+    Serial.println(F("==============================================================="));
+    Serial.println(F("CASE DEFAULT"));
+    Serial.println(F("==============================================================="));
+    //permissáo checada
     break;
   }
 }

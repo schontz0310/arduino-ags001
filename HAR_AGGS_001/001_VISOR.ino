@@ -194,7 +194,7 @@ void visorBegin(){
 
 void visorDrawSetup(ScreenName screen, int interval, uint8_t status){
   _screen = screen;
-  uint8_t _status = status;
+  _status = status;
   int _interval = interval;
 
   switch (_screen)
