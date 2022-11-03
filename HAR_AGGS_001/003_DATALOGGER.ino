@@ -1,3 +1,4 @@
+
 void dataloggerBegin(){
   if (SD.begin(PIN_SS_DATA_LOG)) {
     delay(100);
@@ -66,7 +67,7 @@ bool getTime(const char *str) {
   return true;
 }
 
-String getTimestamp() {
+  String getTimestamp() {
   
   timestamp = "-erro-"; //Mensagem em caso de erro na leitura da data/hora
   if (RTC.read(tm)) { //Função para lder hora
@@ -202,7 +203,7 @@ void dataLoggerWriteCompanyRegisterInDatalogger(){
     fileName.print(";");                                // SEPARADOR CONDICIONAL
     fileName.print("080");                              // CODIGO DA FUNÇÃO
     fileName.print(";");                                // SEPARADOR CONDICIONAL
-    fileName.println(companyNumber);              // UID TAG RFID
+    fileName.println(companyNumber);                    // UID TAG RFID
     fileName.close();
     delay(500);
   } else {
@@ -214,6 +215,72 @@ void dataLoggerWriteCompanyRegisterInDatalogger(){
   }
 }
 
+void dataLoggerWriteOdometerParameter(bool toogle) {
+  
+  Serial.println("entrou na funcao WriteOdometerParameter");
+  if (SD.exists("CAD-ODO.txt")){
+    SD.remove("CAD-ODO.txt");
+    SD.open("CAD-ODO.txt", FILE_WRITE);
+  }
+  if (!SD.exists("CAD-ODO.txt")){
+    Serial.println("criacao do arquivo deu errado");
+    if(!SD.begin(PIN_SS_DATA_LOG)){
+      visorDrawMenu(SCREEN_ERROR);
+      Serial.println("Erro na abertura do cartao SD, [Utils.cpp - 770]");
+      delay(1500);
+      loop();
+    }
+  }
+  Serial.println(fileName);
+  fileName.close();
+  Serial.println(fileName);
+  fileName = SD.open("CAD-ODO.txt", FILE_WRITE);
+  Serial.println(fileName);
+  if (fileName) {
+    Serial.println(F("GRAVANDO DADOS NO CARTÃO SD"));
+    fileName.print(getTimestamp());                     // DATA E HORA
+    fileName.print(";");                                // SEPARADOR CONDICIONAL
+    fileName.print(getUID());                           // NUMERO UNICO DO EQUIPAMENTO
+    fileName.print(";");                                // SEPARADOR CONDICIONAL
+    fileName.print("081");                              // CODIGO DA FUNÇÃO
+    fileName.print(";");                                // SEPARADOR CONDICIONAL
+    fileName.print(toogle);                             // UID TAG RFID
+    fileName.close();
+    delay(500);
+  } else {
+    Serial.println(F("FALHA AO GRAVAR DADOS NO CARTÃO SD"));
+    visorDrawMenu(SCREEN_ERROR);
+    Serial.println("Erro na abertura do cartao SD, [Utils.cpp - 789]");
+    delay(1500);
+    loop();
+  }
+}
+
+bool dataLoggerCheckOdometerValue(){
+  fileName.close();
+  Serial.println("entrou na funcao WriteCompanyRegister");
+  if (!SD.exists("CAD-ODO.txt")){
+    return false;
+  }
+  fileName.close();
+  delay(50);
+  fileName = SD.open("CAD-ODO.txt");
+  if (fileName) {
+    String _uuidRead;
+    while (fileName.available())
+    {
+      visorDrawMenu(SCREEN_PROGRESS);
+      _uuidRead = fileName.readStringUntil(13);
+      tagUuid = _uuidRead.substring(_uuidRead.lastIndexOf(";") + 1);
+      Serial.print(F("ODOMETER = "));
+      Serial.println(tagUuid);
+      if (tagUuid == "1"){
+        return true;
+      }
+    }
+    return false;
+  }
+}
 
 
 String dataloggerGetVehicle(String uuid){
@@ -656,6 +723,8 @@ void dataloggerWriteFuelCharge(){
     fileName.print(";");                                // SEPARADOR CONDICIONAL
     fileName.print(_vehicleFuel);
     fileName.print(";");                                // SEPARADOR CONDICIONAL
+    fileName.print(ODOMETER_VALUE);
+    fileName.print(";");
     fileName.print(fuelQuantity);
     fileName.print(";");                                // SEPARADOR CONDICIONAL
     fileName.println(COMPANY);

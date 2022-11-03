@@ -44,6 +44,55 @@ String jsonAssignCompanyMount(){
   return _payload;  
 }
 
+String jsonHorimeterParameterMount(bool toogle){
+  _temp = String(getTimestamp());
+  _temp.remove(10, 9);
+
+  _payload = "{";
+  _payload += "\"d\":";
+  _payload += "\"";
+  _payload += String(_temp);
+  _payload += "\"";
+  _payload += ",";
+
+  _temp = "";
+  _temp = String(getTimestamp());
+  _temp.remove(0, 11);
+
+  _payload += "\"h\":";
+  _payload += "\"";
+  _payload += String(_temp);
+  _payload += "\"";
+  _payload += ",";
+
+  _payload += "\"e\":";
+  _payload += "\"";
+  _payload += String(getUID());
+  _payload += "\"";
+  _payload += ",";
+
+  _payload += "\"c\":";
+  _payload += "\"";
+  _payload += String("081");
+  _payload += "\"";
+  _payload += ",";
+
+  _payload += "\"hp\":";
+  _payload += "\"";
+  _payload += String(toogle);
+  _payload += "\"";
+  _payload += ",";
+  
+  _payload += "\"cy\":";
+  _payload += "\"";
+  _payload += String(COMPANY);
+  _payload += "\"";
+
+  _payload += "}";
+
+  return _payload;  
+}
+
 
 String jsonPermissionMount(){
   _payload = "";
@@ -280,6 +329,12 @@ String jsonFuelChargeMount(){
   _payload += "\"vf\":";
   _payload += "\"";
   _payload += String(_vehicleFuel);
+  _payload += "\"";
+  _payload += ",";
+
+  _payload += "\"vo\":";
+  _payload += "\"";
+  _payload += String(ODOMETER_VALUE);
   _payload += "\"";
   _payload += ",";
 

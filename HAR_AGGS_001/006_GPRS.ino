@@ -1,8 +1,10 @@
 void gprsBegin() {
   Serial.println(F("Setup GSM..."));
   //Inicializamos a serial onde está o modem
-  Serial2.begin(38400);
+  Serial2.begin(57600);
   delay(100);
+  Serial.println(F("MODEM INFO"));
+  Serial.println(modemGSM.getModemInfo());
   if (!modemGSM.restart()) {
     Serial.println(F("FALHOU REINICIALIZACAO DO MODEM GSM"));
     statusCheck = 1;

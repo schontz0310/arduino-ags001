@@ -41,18 +41,34 @@ bool mqttSend (String topic, String payload) {
   String _topic = topic;
   int steps = 0;
   AGAIN_MQTT:
-  Serial.println(F("Step 5"));
-  if (client.publish(_topic.c_str(), _payload.c_str())){
-    return true;
-  }else{
-    if(steps < 1){
-      Serial.print(F("tentativa = "));
-      Serial.println(steps);
-      steps++;
-      mqttBegin();
-      goto AGAIN_MQTT;
+  if(client.connect("pump", USER, PASS)) {
+    Serial.println(F("Step 5"));
+    if (client.publish(_topic.c_str(), _payload.c_str())){
+      return true;
     }else{
-      return false;
+      if(steps < 1){
+        Serial.print(F("tentativa = "));
+        Serial.println(steps);
+        steps++;
+        Serial.println(client.state());
+        mqttBegin();
+        client.disconnect();
+        goto AGAIN_MQTT;
+      }else{
+        return false;
+      }
     }
-  }
-}
+  }else {
+    if(steps < 1){
+        Serial.print(F("tentativa = "));
+        Serial.println(steps);
+        steps++;
+        Serial.println(client.state());
+        mqttBegin();
+        client.disconnect();
+        goto AGAIN_MQTT;
+      }else{
+        return false;
+      }
+   }  
+ }

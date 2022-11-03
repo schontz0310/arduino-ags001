@@ -1,4 +1,4 @@
-////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////
 //                                                                            //////
 // Controle de bomba de abastecimento de Diesel com Bloco Medidor Analogico   //////
 // Hardware - Arduino Mega                                                    //////
@@ -160,9 +160,12 @@ enum ScreenName
   SCREEN_MENU_CONFIGURACAO,
   SCREEN_CONFIGURACAO_REGISTRO_CHOICE,
   SCREEN_PUMP_CHARGE_FUEL,
+  SCREEN_ODOMETER_VALUE,
+  
 
   // SCREEN CONFIGURACAO
   SCREEN_CONFIGURACAO_REGISTRO,
+  SCREEN_CONFIGURACAO_ODOMETER,
 
   // ACCESSES SCREEN
   SCREEN_ACCCESSES,
@@ -180,6 +183,8 @@ uint8_t statusCheck             =       0;
 bool stateCheck[8]              =       {0,0,0,0,0,0,0,0};                      // 0=SD, 1=RTC, 2=RFID, 3=MODEN           
 const uint8_t errorCode[6]      =       {1,3,5,11,20,0};                       
 const bool GET_SYSTEM_TIMESTAMP =       true;                                   // Variavel para setar quando o programa deve pegar a hora do sistema
+bool ODOMETER_STATUS;
+String ODOMETER_VALUE;  
 String COMPANY;
 String OPERADOR_REGISTER;
 String OPERADOR_NAME;
@@ -197,6 +202,7 @@ const int retryNumber = 1;
 int retryCount;
 int _position;
 char _keyPressed;
+int _progress;
 
 bool successRead;
 byte status;
@@ -244,6 +250,8 @@ void setup() {
   visorDrawSetup(SCREEN_INIT, 3000, 0);
   dataloggerBegin();
   visorDrawSetup(SCREEN_VERIFY_DATA_LOGGER_SD, 2000, statusCheck);
+  Serial.println(F("Setup Time = "));
+  getTimestamp();
   dataloggerSetTimestamp();
   visorDrawSetup(SCREEN_VERIFY_DATA_LOGGER_RTC, 2000, statusCheck);
   rfidReaderBegin();
@@ -256,12 +264,15 @@ void setup() {
   COMPANY = dataloggerGetCompany();
   Serial.print("Company = ");
   Serial.println(COMPANY);
-   while (COMPANY == "NO_COMPANY") {
-      menuAssignDeviceRegister();
-   }
+  while (COMPANY == "NO_COMPANY") {
+    menuAssignDeviceRegister();
+  }
+  ODOMETER_STATUS = dataLoggerCheckOdometerValue();
+  Serial.println(client.state());
 }
 
 void loop() {
+  ODOMETER_VALUE = "";
   OPERADOR_REGISTER = "";
   OPERADOR_NAME = "";
   OPERADOR_PERMISSION = "";
@@ -271,6 +282,8 @@ void loop() {
   Serial.println(F("==============================================================="));
   Serial.println(F("====================== INICIO DO SISTEMA ======================"));
   Serial.println(F("==============================================================="));
+   Serial.print(F("ODOMETRO = "));
+  Serial.println(ODOMETER_STATUS);
   OPERADOR_REGISTER = operatorRead();
   OPERADOR_NAME = OPERADOR_REGISTER.substring(OPERADOR_REGISTER.indexOf("#") + 1, OPERADOR_REGISTER.lastIndexOf("#"));
   OPERADOR_PERMISSION = OPERADOR_REGISTER.substring(OPERADOR_REGISTER.lastIndexOf("#") + 1);
@@ -304,7 +317,16 @@ void loop() {
   Serial.println(F("==============================================================="));
   Serial.println(F("FIM DA CHECAGEM"));
   Serial.println(F("==============================================================="));
-  //permissáo checada
+  Serial.println("ODOMETRO_STATUS = " + ODOMETER_STATUS);
+  if (ODOMETER_STATUS == "1" | ODOMETER_STATUS == 1){
+    Serial.println(F("==============================================================="));
+    Serial.println(F("INFORMAR ODOMETRO/HORIMETRO"));
+    Serial.println(F("==============================================================="));
+    ODOMETER_VALUE = keyboardGetKeyNumerics(SCREEN_ODOMETER_VALUE);
+    ODOMETER_VALUE.trim();
+    Serial.println("ODOMETRO = " + ODOMETER_VALUE);
+  }
+  
   VehicleFuel fuel;
   if (VEHICLE_FUEL == "1") {
     fuel = DIESEL_S10;

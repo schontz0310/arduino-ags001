@@ -412,7 +412,6 @@ void visorDrawSetup(ScreenName screen, int interval, uint8_t status){
 
 
 void visorDrawMenu(ScreenName targetScreen){
-  int _status;
   _screen = targetScreen;
 
   switch (_screen)
@@ -464,6 +463,9 @@ void visorDrawMenu(ScreenName targetScreen){
         display.drawStr( 27, 28, "REGISTRO");
         display.drawStr( 6, 28, "1");
         display.drawRFrame(1, 17, 15, 15, 3);
+        display.drawStr( 27, 44, "ODOMETRO");
+        display.drawStr( 6, 44, "2");
+        display.drawRFrame(1, 33, 15, 15, 3);
       } while (display.nextPage());  
     break;
     
@@ -677,21 +679,50 @@ void visorDrawMenu(ScreenName targetScreen){
         display.drawRFrame(1, 31, 126, 18, 5);
       } while (display.nextPage());  
     break;
+    case SCREEN_CONFIGURACAO_ODOMETER:
+      display.firstPage();
+      do {
+        display.setFont(u8g_font_unifont);
+        display.drawStr( 1, 12, "    ODOMETRO    ");
+        display.drawStr( 2, 12, "    ODOMETRO    ");
+        display.setFont(u8g_font_6x10);
+        display.drawStr( 27, 28, "LIGADO");
+        display.drawStr( 6, 28, "1");
+        display.drawRFrame(1, 17, 15, 15, 3);
+        display.drawStr( 27, 44, "DESLIGADO");
+        display.drawStr( 6, 44, "2");
+        display.drawRFrame(1, 33, 15, 15, 3);
+      } while (display.nextPage());  
+    break;
 
     case SCREEN_PROGRESS:
-        _status  = _status + 10;       
-        if (_status >= 100 ){
-          _status = 0;
+       Serial.println("STATUS" + _progress);
+        _progress  = _progress + 10;       
+        if (_progress >= 100 ){
+          _progress = 0;
         };
       display.firstPage();
       do {
-        _status++;   
+        _progress++;   
         display.setFont(u8g_font_unifont);
         display.drawStr( 20, 27, F("PROCESSANDO"));
         display.drawStr( 21, 27, F("PROCESSANDO"));
         display.drawFrame(12,40,100,10);
-        display.drawBox(12,40,_status,10);
+        display.drawBox(12,40,_progress,10);
       } while (display.nextPage());
+    break;
+
+    case SCREEN_ODOMETER_VALUE:
+      display.firstPage();
+      do {
+        display.setFont(u8g_font_6x10);
+        display.drawStr( 22, 15, "DIGITE O VALOR");
+        display.drawStr( 22, 25, "     KM/HR    ");
+        display.drawStr( 3, 60, "APERTE '*' PARA MENU");
+        display.setFont(u8g_font_unifont);
+        display.drawStr( 4, 45, _buffer);
+        display.drawRFrame(1, 31, 126, 18, 5);
+      } while (display.nextPage());  
     break;
 
     case SCREEN_ERROR: {
@@ -710,6 +741,36 @@ void visorDrawMenu(ScreenName targetScreen){
   }
 }
 
+void menuHorimeterParameter(bool toogle){
+  String nameFile = "CAD-ODO.txt";
+  Serial.println(F("FUNCAO HORIMETER PARAMETER"));
+  if (SD.exists(nameFile)) {
+    SD.remove(nameFile);
+    Serial.println(F("ODO.txt REMOVIDO"));
+  }
+  dataLoggerWriteOdometerParameter(toogle);
+  visorDrawMenu(SCREEN_PROGRESS);
+  ODOMETER_STATUS = dataLoggerCheckOdometerValue();
+  jsonPayload = jsonHorimeterParameterMount(toogle);
+  Serial.println(jsonPayload);
+    visorDrawMenu(SCREEN_PROGRESS);
+  if(mqttSend(TOPIC_REGISTER, jsonPayload)){
+    Serial.println("Eviou MQTT");
+    visorDrawMenu(SCREEN_SUCCESS);
+    somCerto();
+    delay(1500);
+    loop();
+  }else{
+    dataloggerWriteFailMqttLog(jsonPayload);
+    Serial.println("Erro MQTT final");
+    visorDrawMenu(SCREEN_SUCCESS);
+    somCerto();
+    delay(1500);
+    loop();
+  }
+  loop();
+  
+ }
 
 void menuAssignDeviceRegister(){
   companyNumber = keyboardGetKeyAlfanumeric(SCREEN_CONFIGURACAO_REGISTRO);
@@ -879,20 +940,19 @@ void visorMenuPrincipal(){
     tecla_presionada = keyboard.getKey();
   }
   while (!tecla_presionada);   
-
   switch (tecla_presionada)       
   {
     case '1':
-      visorMenuCadastro();
       Serial.println(F("BOTAO 1"));
+      visorMenuCadastro();
       break;
     case '2':
-      visorMenuConfiguracao();
       Serial.println(F("BOTAO 2"));
+      visorMenuConfiguracao();
       break;
     case '3':
-      //Menu_Entradas();
       Serial.println(F("BOTAO 3"));
+      //Menu_Entradas();
       break;
     case '4':
     case '5':
@@ -907,10 +967,15 @@ void visorMenuPrincipal(){
     case 'B':
     case 'C':
     case 'D':
-      loop();
+      Serial.print("Tecla = ");
+      Serial.println(tecla_presionada);
       Serial.println(F("SAIU DO MENU"));
+      loop();
       break;
   }
+  Serial.print("Tecla = ");
+  Serial.println(tecla_presionada);
+  loop();
 }
 
 
@@ -1050,10 +1115,13 @@ void visorMenuConfiguracao(){
   switch (tecla_presionada)
   {
     case '1':
-      visorMenuAccesses(SCREEN_CONFIGURACAO_REGISTRO_CHOICE);
       Serial.println(F("BOTAO 1 - REGISTRO DE DISPOSITIVO"));
+      visorMenuAccesses(SCREEN_CONFIGURACAO_REGISTRO_CHOICE);
       break;
     case '2':
+      Serial.println(F("BOTAO 2 - CONFIGURACAO DE ODOMETRO"));
+      visorMenuAccesses(SCREEN_CONFIGURACAO_ODOMETER);
+      break;
     case '4':
     case '5':
     case '6':
@@ -1114,7 +1182,7 @@ void menuPermissionRegistration(){
     loop();
   }
 
-  String _UUIDPermission = tagUuid;
+  _UUIDPermission = tagUuid;
 
   memset(_buffer, 0, sizeof(_buffer));  
   visorDrawMenu(SCREEN_MENU_CADASTRO_VEHICLE_READ_CARD);
@@ -1147,6 +1215,7 @@ void menuPermissionRegistration(){
     loop();
   }
   _UUIDPermission.concat(tagUuid);
+  Serial.print(F("TAG DE PERMISSAO = "));
   Serial.println(_UUIDPermission);
 
   dataloggerWritePermission();
@@ -1311,6 +1380,41 @@ void visorMenuAccesses(MetodeAccesses metode, ScreenName nextScreen){
           case '1':
             menuAssignDeviceRegister();
             break;
+          case '2':
+            Serial.println(F("NOT IMPLEMENTED"));
+            loop();
+            break;
+           case '3':
+            // menuHorimeterParameter();
+            break;      
+          default:
+            Serial.println(F("CANCELAR"));
+            loop();
+            break;
+        }
+        break;
+      //   
+      case SCREEN_CONFIGURACAO_ODOMETER:
+        visorDrawMenu(_nextScreen);
+        do {
+          tecla_presionada = keyboard.getKey();
+        } while (!tecla_presionada);
+        Serial.print("Tecla pressionada = ");
+        Serial.println(tecla_presionada);
+        switch (tecla_presionada)
+        {
+          case '1':
+            Serial.println(F("HODOMETRO LIGADO"));
+            menuHorimeterParameter(true);
+            loop();
+            break;
+          case '2':
+            Serial.println(F("HODOMETRO DESLIGADO"));
+            menuHorimeterParameter(false);
+            loop();
+            break;
+           case '3':
+            break;      
           default:
             Serial.println(F("CANCELAR"));
             loop();
